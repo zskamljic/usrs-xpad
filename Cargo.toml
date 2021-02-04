@@ -1,0 +1,11 @@
+[package]
+name = "usrs-xpad"
+version = "0.1.0"
+authors = ["Zan Skamljic <zan.skamljic@equaleyes.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+libusb = "0.3.0"
+crossbeam = "0.8.0"
