@@ -11,6 +11,8 @@ pub enum Key {
     Down,
     Left,
     Right,
+    ThumbLeft,
+    ThumbRight,
     Xbox,
 }
 

@@ -55,8 +55,10 @@ fn send_back_keys(input: &UInputHandle, keys: BackKeys) {
 
 fn send_left_stick(input: &UInputHandle, stick: Stick, trigger: u16) {
     input.update_axis(Side::Left, stick.x, stick.y, trigger);
+    input.set_key_pressed(Key::ThumbLeft, stick.clicked);
 }
 
 fn send_right_stick(input: &UInputHandle, stick: Stick, trigger: u16) {
     input.update_axis(Side::Right, stick.x, stick.y, trigger);
+    input.set_key_pressed(Key::ThumbRight, stick.clicked);
 }

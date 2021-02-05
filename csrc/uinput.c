@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 enum Key {
-    A, B, X, Y, LB, RB, BACK, SELECT, UP, DOWN, LEFT, RIGHT, XBOX
+    A, B, X, Y, LB, RB, BACK, SELECT, UP, DOWN, LEFT, RIGHT, THUMB_LEFT, THUMB_RIGHT, XBOX
 };
 
 int get_code(int value);
@@ -27,10 +27,12 @@ void setup_device(int file, const char *name, short vendor, short product) {
     ioctl(file, UI_SET_KEYBIT, BTN_BACK);
     ioctl(file, UI_SET_KEYBIT, BTN_START);
     ioctl(file, UI_SET_KEYBIT, BTN_SELECT);
-    ioctl(file, UI_SET_KEYBIT, BTN_DPAD_UP);
-    ioctl(file, UI_SET_KEYBIT, BTN_DPAD_DOWN);
-    ioctl(file, UI_SET_KEYBIT, BTN_DPAD_LEFT);
-    ioctl(file, UI_SET_KEYBIT, BTN_DPAD_RIGHT);
+    ioctl(file, UI_SET_KEYBIT, BTN_TRIGGER_HAPPY1);
+    ioctl(file, UI_SET_KEYBIT, BTN_TRIGGER_HAPPY2);
+    ioctl(file, UI_SET_KEYBIT, BTN_TRIGGER_HAPPY3);
+    ioctl(file, UI_SET_KEYBIT, BTN_TRIGGER_HAPPY4);
+    ioctl(file, UI_SET_KEYBIT, BTN_THUMBL);
+    ioctl(file, UI_SET_KEYBIT, BTN_THUMBR);
 
     // Enable joysticks
     ioctl(file, UI_SET_EVBIT, EV_ABS);
@@ -104,15 +106,19 @@ int get_code(int value) {
         case SELECT:
             return BTN_SELECT;
         case UP:
-            return BTN_DPAD_UP;
+            return BTN_TRIGGER_HAPPY3;
         case DOWN:
-            return BTN_DPAD_DOWN;
+            return BTN_TRIGGER_HAPPY4;
         case LEFT:
-            return BTN_DPAD_LEFT;
+            return BTN_TRIGGER_HAPPY1;
         case RIGHT:
-            return BTN_DPAD_RIGHT;
+            return BTN_TRIGGER_HAPPY2;
         case XBOX:
             return BTN_START;
+        case THUMB_LEFT:
+            return BTN_THUMBL;
+        case THUMB_RIGHT:
+            return BTN_THUMBR;
         default:
             return KEY_SPACE;
     }

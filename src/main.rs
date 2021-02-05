@@ -39,10 +39,11 @@ fn controller_loop(mut controller: Controller) -> Result<()> {
     let vendor = controller.identifier.vendor_id;
     let product = controller.identifier.product_id;
     let uinput = match UInputHandle::new(
-        &format!(
-            "{} {}",
-            controller.device_info.manufacturer, controller.device_info.name
-        ),
+        "Microsoft X-Box One S pad",
+        // &format!(
+        //     "{} {}",
+        //     controller.device_info.manufacturer, controller.device_info.name
+        // ),
         vendor,
         product,
     ) {
