@@ -10,6 +10,7 @@ use devices::Controller;
 
 use crate::protocol::{Command, Protocol};
 use crate::uinput::UInputHandle;
+use std::time::Duration;
 
 mod devices;
 mod mapping;
@@ -26,14 +27,13 @@ fn main() -> Result<()> {
             .map(|c| scope.spawn(move |_| controller_loop(c)))
             .collect();
         for handle in handles {
-            match handle.join() {
-                Ok(_) => {}
-                Err(_) => {}
-            }
+            if handle.join().is_ok() {}
         }
     })
     .unwrap();
-    loop {}
+    loop {
+        std::thread::sleep(Duration::from_secs(60));
+    }
 }
 
 fn controller_loop(mut controller: Controller) -> Result<()> {

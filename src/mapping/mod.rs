@@ -3,7 +3,7 @@ use crate::uinput::{Key, Side, UInputHandle};
 
 pub fn apply_keys(input: &UInputHandle, command: Command) {
     match command {
-        Command::Terminate => return,
+        Command::Terminate => {}
         Command::Xbox(pressed) => send_xbox_key(input, pressed),
         Command::Keys {
             meta,

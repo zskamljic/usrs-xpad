@@ -37,8 +37,8 @@ impl Protocol {
             match controller.read() {
                 Ok(data) => {
                     let packets = self.find_response_packet(data, index);
-                    for mut packet in packets {
-                        if controller.write(&mut packet).is_err() {
+                    for packet in packets {
+                        if controller.write(&packet).is_err() {
                             return Some(Terminate);
                         }
                         index += 1;
