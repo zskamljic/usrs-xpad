@@ -1,16 +1,17 @@
 mod keys;
 
-pub use keys::Key;
+pub use keys::{Key, Side};
 use std::ffi::CString;
 use std::io::{Error, ErrorKind, Result};
-use std::os::raw::{c_char, c_int, c_short};
+use std::os::raw::{c_char, c_int, c_short, c_ushort};
 
 use libc::{O_NONBLOCK, O_WRONLY};
 
 extern "C" {
     fn close_and_destroy(file: c_int);
     fn setup_device(file: c_int, name: *const c_char, vendor_id: c_short, product_id: c_short);
-    fn set_key(file: c_int, key: c_char, pressed: bool);
+    fn set_key(file: c_int, key: u32, pressed: bool);
+    fn set_axis(file: c_int, side: u32, x: c_short, y: c_short, z: c_ushort);
 }
 
 pub struct UInputHandle {
@@ -31,9 +32,14 @@ impl UInputHandle {
     }
 
     pub fn set_key_pressed(&self, key: Key, pressed: bool) {
-        let key = key.map();
         unsafe {
-            set_key(self.file, key, pressed);
+            set_key(self.file, key as u32, pressed);
+        }
+    }
+
+    pub fn update_axis(&self, side: Side, x: i16, y: i16, z: u16) {
+        unsafe {
+            set_axis(self.file, side as u32, x, y, z);
         }
     }
 }
