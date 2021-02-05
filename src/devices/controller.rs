@@ -9,11 +9,10 @@ use crate::devices::identifier::Identifier;
 use std::time::Duration;
 
 pub struct Controller<'a> {
-    identifier: &'static Identifier,
-    device_info: DeviceInfo,
+    pub identifier: &'static Identifier,
+    pub device_info: DeviceInfo,
     handle: DeviceHandle<'a>,
     endpoints: Endpoints,
-    reading: bool,
 }
 
 impl<'a> Controller<'a> {
@@ -28,38 +27,36 @@ impl<'a> Controller<'a> {
             device_info,
             handle,
             endpoints,
-            reading: false,
         }
     }
 
-    pub fn read(&mut self) -> Result<Vec<u8>> {
+    pub fn prepare(&mut self) -> Result<()> {
         let endpoint = &self.endpoints[&TransferType::Interrupt];
-        if !self.reading {
-            self.handle.reset()?;
-            if self.handle.kernel_driver_active(endpoint.interface)? {
-                println!("Detaching kernel driver");
-                self.handle.detach_kernel_driver(endpoint.interface)?;
-            }
-            self.handle.set_active_configuration(endpoint.config)?;
-            self.handle.claim_interface(endpoint.interface)?;
-            self.handle
-                .set_alternate_setting(endpoint.interface, endpoint.setting)?;
-            self.reading = true;
+        self.handle.reset()?;
+        if self.handle.kernel_driver_active(endpoint.interface)? {
+            println!("Detaching kernel driver");
+            self.handle.detach_kernel_driver(endpoint.interface)?;
         }
+        self.handle.set_active_configuration(endpoint.config)?;
+        self.handle.claim_interface(endpoint.interface)?;
+        self.handle
+            .set_alternate_setting(endpoint.interface, endpoint.setting)?;
+        Ok(())
+    }
+
+    pub fn read(&self) -> Result<Vec<u8>> {
+        let endpoint = &self.endpoints[&TransferType::Interrupt];
         let mut buffer = [0u8; 64];
         let read =
             self.handle
                 .read_interrupt(endpoint.input, &mut buffer, Duration::from_secs(1))?;
-        println!("Read {} bytes: {:02x?}", read, &buffer[0..read]);
         Ok(buffer[0..read].to_vec())
     }
 
-    pub fn write(&mut self, data: &mut [u8]) -> Result<()> {
+    pub fn write(&self, data: &[u8]) -> Result<()> {
         let endpoint = &self.endpoints[&TransferType::Interrupt];
-        let written = self
-            .handle
+        self.handle
             .write_interrupt(endpoint.output, data, Duration::from_secs(0))?;
-        println!("Wrote {} bytes.", written);
         Ok(())
     }
 }

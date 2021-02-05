@@ -12,9 +12,9 @@ const SUPPORTED_DEVICES: &[Identifier] = &[Identifier {
     },
 }];
 
-pub(super) struct Identifier {
-    pub(super) vendor_id: u16,
-    pub(super) product_id: u16,
+pub struct Identifier {
+    pub vendor_id: u16,
+    pub product_id: u16,
     pub(super) protocol: Protocol,
 }
 

@@ -4,11 +4,16 @@
 
 use crossbeam::thread;
 use crossbeam::thread::ScopedJoinHandle;
-use libusb::{Context, Error, Result};
+use libusb::{Context, Result};
 
+use crate::protocol::{Command, Protocol};
+use crate::uinput::UInputHandle;
 use devices::Controller;
 
 mod devices;
+mod mapping;
+mod protocol;
+mod uinput;
 
 fn main() -> Result<()> {
     let context = Context::new()?;
@@ -31,40 +36,34 @@ fn main() -> Result<()> {
 }
 
 fn controller_loop(mut controller: Controller) -> Result<()> {
-    let mut packets = vec![
-        vec![0x04, 0x20, 0x01, 0x00],
-        vec![
-            0x01, 0x20, 0x07, 0x09, 0x00, 0x1e, 0x20, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00,
-        ],
-    ];
-    let mut next_packet = None;
-    loop {
-        match controller.read() {
-            Ok(data) => {
-                if packets.is_empty() {
-                    continue;
-                }
-                if data.len() > 2 && data[0] == 0x02 && data[1] == 0x20 {
-                    next_packet = Some(packets.remove(0));
-                }
-            }
-            Err(Error::Timeout) => {
-                if packets.is_empty() {
-                    continue;
-                }
-                next_packet = Some(packets.remove(0));
-            }
-            Err(error) => {
-                println!("Unable to read: {}", error);
-                break;
-            }
+    let vendor = controller.identifier.vendor_id;
+    let product = controller.identifier.product_id;
+    let uinput = match UInputHandle::new(
+        &format!(
+            "{} {}",
+            controller.device_info.manufacturer, controller.device_info.name
+        ),
+        vendor,
+        product,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            println!("Unable to init uinput: {}", error);
+            return Err(libusb::Error::NoDevice);
         }
-        if let Some(mut packet) = next_packet {
-            if let Err(error) = controller.write(&mut packet) {
-                println!("Unable to write: {}", error);
-                break;
+    };
+    let protocol = match Protocol::for_ids(vendor, product) {
+        Some(value) => value,
+        None => return Ok(()),
+    };
+    controller.prepare()?;
+    protocol.init(&mut controller);
+    loop {
+        if let Some(packet) = protocol.read_command(&mut controller) {
+            match packet {
+                Command::Terminate => break,
+                Command::Keys { .. } | Command::Xbox(_) => mapping::apply_keys(&uinput, packet),
             }
-            next_packet = None;
         }
     }
     Ok(())
