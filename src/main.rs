@@ -6,9 +6,10 @@ use crossbeam::thread;
 use crossbeam::thread::ScopedJoinHandle;
 use libusb::{Context, Result};
 
+use devices::Controller;
+
 use crate::protocol::{Command, Protocol};
 use crate::uinput::UInputHandle;
-use devices::Controller;
 
 mod devices;
 mod mapping;
@@ -39,11 +40,10 @@ fn controller_loop(mut controller: Controller) -> Result<()> {
     let vendor = controller.identifier.vendor_id;
     let product = controller.identifier.product_id;
     let uinput = match UInputHandle::new(
-        "Microsoft X-Box One S pad",
-        // &format!(
-        //     "{} {}",
-        //     controller.device_info.manufacturer, controller.device_info.name
-        // ),
+        &format!(
+            "{} {}",
+            controller.device_info.manufacturer, controller.device_info.name
+        ),
         vendor,
         product,
     ) {
