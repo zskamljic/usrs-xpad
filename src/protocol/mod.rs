@@ -38,7 +38,7 @@ impl Protocol {
                 Ok(data) => {
                     let packets = self.find_response_packet(data, index);
                     for packet in packets {
-                        if controller.write(&packet).is_err() {
+                        if controller.write(packet).is_err() {
                             return Some(Terminate);
                         }
                         index += 1;
