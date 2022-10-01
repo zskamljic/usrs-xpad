@@ -2,9 +2,8 @@
 //! Crate to (hopefully) provide a working userspace driver
 //! for XBOX controllers, like xpad
 
-use crossbeam::thread;
-use crossbeam::thread::ScopedJoinHandle;
 use libusb::{Context, Result};
+use std::thread::{self, ScopedJoinHandle};
 
 use devices::Controller;
 
@@ -24,13 +23,12 @@ fn main() -> Result<()> {
     thread::scope(move |scope| {
         let handles: Vec<ScopedJoinHandle<Result<()>>> = controllers
             .into_iter()
-            .map(|c| scope.spawn(move |_| controller_loop(c)))
+            .map(|c| scope.spawn(move || controller_loop(c)))
             .collect();
         for handle in handles {
             if handle.join().is_ok() {}
         }
-    })
-    .unwrap();
+    });
     loop {
         std::thread::sleep(Duration::from_secs(60));
     }
